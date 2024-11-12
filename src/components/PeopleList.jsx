@@ -1,60 +1,44 @@
 import { useEffect, useState } from "react";
-import PersonDetail from "./PersonDetail"
+import PersonDetail from "./PersonDetail";
 
 export default function PeopleList() {
-
     const [web, setPeople] = useState([])
-    const [filtradoWeb, setFilteredweb] = useState([]);
+    const [filteredWeb, setFilteredWeb] = useState([])
     const [urlSelected, setUrlSelected] = useState("")
-    const [error, setError] = useState(false);
+    const [error, setError] = useState(false)
+    const [cityFilter, setCityFilter] = useState("")
+    const [activityFilter, setActivityFilter] = useState("")
 
     useEffect(() => {
-        fetch("http://localhost:3000/api/web/buscador") // Cambiar una url para provocar error
+        fetch("http://localhost:3000/api/web/buscador") // Cambia esta URL para provocar un error
             .then(response => response.json())
-            // .then(data => { console.log(data.results) })
             .then(data => {
                 setPeople(data);
-                setFilteredweb(data);
+                setFilteredWeb(data);
             })
             .catch(error => {
-                console.error("Error fetching data", error)
-                setError(true)
-            })
-    }, [])
-
-
-    const [cityFilter, setCityFilter] = useState("");
-    const [activityFilter, setActivityFilter] = useState("");
+                console.error("Error fetching data", error);
+                setError(true);
+            });
+    }, []);
 
     useEffect(() => {
-        const filtrado = web.filter(web => {
+        const filtrado = web.filter(person => {
             return (
-                (cityFilter === "" || web.ciudad.toLowerCase().includes(cityFilter.toLowerCase())) &&
-                (activityFilter === "" || web.actividad.toLowerCase().includes(activityFilter.toLowerCase()))
+                (cityFilter === "" || person.ciudad.toLowerCase().includes(cityFilter.toLowerCase())) &&
+                (activityFilter === "" || person.actividad.toLowerCase().includes(activityFilter.toLowerCase()))
             );
         });
-        setPeople(filtrado);
+        setFilteredWeb(filtrado)
     }, [cityFilter, activityFilter, web]);
 
-
-    let listPeople = null;
-    if (error) {
-        listPeople = <p style={{ textAlign: "center" }}>Ha ocurrido un error</p>
-    } else {
-        listPeople = filtradoWeb.map(web => (
-            <div>
-                <h3 onClick={() => setUrlSelected(`http://localhost:3000/api/web/${web._id}`)}>{web.titulo}</h3>
-                <p>Actividad: {web.actividad}</p>
-                <p>Ciudad: {web.ciudad}</p>
-            </div>
-        ))
-    }
-
-    const sortweb = () => {
-        fetch("http://localhost:3000/api/web/buscador?ordenar=desc") // Cambia a la URL que proporciona los datos ordenados
+    // Función para ordenar los datos por "Scoring" de manera descendente
+    const sortWeb = () => {
+        fetch("http://localhost:3000/api/web/buscador?ordenar=desc")
             .then(response => response.json())
             .then(data => {
-                setFilteredweb(data); // Actualiza la lista filtrada con los datos ordenados
+                setPeople(data)
+                setFilteredWeb(data)
             })
             .catch(error => {
                 console.error("Error fetching sorted data", error);
@@ -62,13 +46,24 @@ export default function PeopleList() {
             });
     };
 
+    // Condicional basado en error
+    let listPeople = error ? (
+        <p style={{ textAlign: "center" }}>Ha ocurrido un error</p>
+    ) : (
+        filteredWeb.map(person => (
+            <div>
+                <h3 onClick={() => setUrlSelected(`http://localhost:3000/api/web/${person._id}`)}>{person.titulo}</h3>
+                <p>Actividad: {person.actividad}</p>
+                <p>Ciudad: {person.ciudad}</p>
+            </div>
+        ))
+    );
+
     return (
         <div>
             <h2>Lista de personas</h2>
             <div>
-                <button onClick={sortweb}>
-                    Ordenar por Scoring
-                </button>
+                <button onClick={sortWeb}>Ordenar por Scoring</button>
             </div>
             <div>
                 <input
@@ -84,12 +79,10 @@ export default function PeopleList() {
                     onChange={e => setActivityFilter(e.target.value)}
                 />
             </div>
-            <div>
-                {listPeople}
-            </div>
+            <div>{listPeople}</div>
             <div>
                 <PersonDetail url={urlSelected} />
             </div>
         </div>
-    )
+    );
 }
