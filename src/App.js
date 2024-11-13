@@ -1,15 +1,20 @@
 import './App.css';
-// import EligeBoton from './components/EligeBoton';
-// import Saludo from './components/saludo';
-// import Suma from './components/suma';
-// import Mensaje from './components/Mensaje';
-import PeopleList from './components/PeopleList';
+import { useState } from 'react';
+import Login from './components/Login';
+import Mensaje from './components/Mensaje';
+import WebList from './components/WebList';
+
 
 function App() {
+  const [mensaje, setMessage] = useState('');
+
   return (
     <div className="App">
-      <PeopleList/>
+      <Login setMessage={setMessage} />
+      <Mensaje mensaje={mensaje} />
+      <WebList/>
     </div>
   );
 }
+
 export default App;
